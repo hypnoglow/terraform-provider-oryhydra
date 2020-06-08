@@ -1,0 +1,17 @@
+builds:
+  - binary: "{{ .ProjectName }}_v{{ .Version }}"
+    env:
+      - CGO_ENABLED=0
+      - GOFLAGS=-mod=vendor
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+
+archives:
+  - format: tar.gz
+    name_template: "{{ .ProjectName }}_v{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "{{ .ProjectName }}_v{{ .Version }}_checksums.txt"
