@@ -181,6 +181,12 @@ func resourceOAuth2ClientRead(d *schema.ResourceData, m interface{}) error {
 			WithID(d.Id()),
 	)
 	if err != nil {
+		// NOTE: when client does not exist, Hydra returns 401 even if no authentication is required.
+		switch err.(type) {
+		case *admin.GetOAuth2ClientUnauthorized:
+			d.SetId("")
+			return nil
+		}
 		return err
 	}
 
