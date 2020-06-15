@@ -10,7 +10,7 @@ To install this provider in a [recommended way](https://www.terraform.io/docs/co
 e.g. for Linux:
 
 ```shell script
-VERSION="v0.1.0"
+VERSION="v0.1.1"
 
 cd /tmp
 wget https://github.com/hypnoglow/terraform-provider-oryhydra/releases/download/${VERSION}/terraform-provider-oryhydra_${VERSION}_linux_amd64.tar.gz
