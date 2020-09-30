@@ -242,7 +242,6 @@ func expandClient(d *schema.ResourceData) *models.OAuth2Client {
 	clientSecret := d.Get("client_secret").(string)
 	clientName := d.Get("client_name").(string)
 	clientMetadata := d.Get("client_metadata")
-	lg.Printf("metadata: %T %v", clientMetadata, clientMetadata)
 
 	var scopeArray []string
 	for _, sc := range d.Get("scopes").([]interface{}) {
@@ -324,8 +323,6 @@ func flattenClient(d *schema.ResourceData, client *models.OAuth2Client) {
 	d.Set("client_id", client.ClientID)
 	d.Set("client_name", client.ClientName)
 	d.Set("client_metadata", client.Metadata)
-
-	lg.Printf("metadata: %T %v", client.Metadata, client.Metadata)
 
 	// NOTE: client secret is never returned from read operations, so don't set this field.
 

@@ -10,12 +10,12 @@ To install this provider in a [recommended way](https://www.terraform.io/docs/co
 e.g. for Linux:
 
 ```shell script
-VERSION="v0.1.1"
+VERSION="0.1.1"
 
 cd /tmp
-wget https://github.com/hypnoglow/terraform-provider-oryhydra/releases/download/${VERSION}/terraform-provider-oryhydra_${VERSION}_linux_amd64.tar.gz
+wget https://github.com/hypnoglow/terraform-provider-oryhydra/releases/download/v${VERSION}/terraform-provider-oryhydra_${VERSION}_linux_amd64.tar.gz
 tar xzf terraform-provider-oryhydra_${VERSION}_linux_amd64.tar.gz
-mv terraform-provider-oryhydra_${VERSION} ~/.terraform.d/plugins/linux_amd64/terraform-provider-oryhydra_${VERSION}
+mv terraform-provider-oryhydra_v${VERSION} ~/.terraform.d/plugins/linux_amd64/terraform-provider-oryhydra_v${VERSION}
 ```
 
 Then you can set up a provider in your terraform project:
