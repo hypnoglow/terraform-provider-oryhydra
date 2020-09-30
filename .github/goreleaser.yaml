@@ -19,11 +19,7 @@ builds:
         goarch: '386'
 
 archives:
-  - id: zip
-    format: zip
-    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
-  - id: targz
-    format: tar.gz
+  - format: zip
     name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
 
 checksum:
