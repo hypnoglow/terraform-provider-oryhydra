@@ -7,4 +7,5 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.1
 	github.com/hashicorp/terraform-plugin-sdk v1.13.0
 	github.com/ory/hydra-client-go v1.4.10
+	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 )
