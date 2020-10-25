@@ -26,6 +26,11 @@ jobs:
           go mod download
           go mod vendor
 
+      - name: Run linters
+        uses: golangci/golangci-lint-action@v2
+        with:
+          version: v1.31
+
       - name: Build
         run: |
           go build -o ./bin/terraform-provider-oryhydra
