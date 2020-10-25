@@ -15,7 +15,7 @@ terraform {
   required_providers {
     oryhydra = {
       source = "hypnoglow/oryhydra"
-      version = "0.2.0"
+      version = "0.3.0"
     }
   }
 }
