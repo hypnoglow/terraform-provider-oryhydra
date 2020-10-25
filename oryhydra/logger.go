@@ -35,10 +35,6 @@ type logger interface {
 
 type nopLogger struct{}
 
-func (n nopLogger) Print(v ...interface{}) {
-	return
-}
+func (n nopLogger) Print(v ...interface{}) {}
 
-func (n nopLogger) Printf(format string, v ...interface{}) {
-	return
-}
+func (n nopLogger) Printf(format string, v ...interface{}) {}
