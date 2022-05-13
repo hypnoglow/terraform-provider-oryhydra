@@ -9,11 +9,13 @@ builds:
     ldflags:
       - "-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}"
     goos:
-      - linux
       - darwin
+      - linux
     goarch:
-      - amd64
       - '386'
+      - amd64
+      - arm
+      - arm64
     ignore:
       - goos: darwin
         goarch: '386'
