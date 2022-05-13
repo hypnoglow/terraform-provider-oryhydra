@@ -41,6 +41,11 @@ func Provider() *schema.Provider {
 				RequiredWith: []string{"oauth2_client_id", "oauth2_token_url"},
 				DefaultFunc:  schema.EnvDefaultFunc("ORY_HYDRA_OAUTH2_CLIENT_SECRET", nil),
 			},
+			"header_authorization": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("HEADER_AUTHORIZATION", nil),
+			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
 			"oryhydra_oauth2_client": resourceOAuth2Client(),
@@ -53,6 +58,7 @@ func configure(data *schema.ResourceData) (interface{}, error) {
 	adminURL := data.Get("url").(string)
 
 	httpClient := cleanhttp.DefaultClient()
+
 	if tokenURL, ok := data.GetOk("oauth2_token_url"); ok {
 		config := clientcredentials.Config{
 			TokenURL:     tokenURL.(string),
@@ -61,6 +67,11 @@ func configure(data *schema.ResourceData) (interface{}, error) {
 		}
 		ctx := context.WithValue(context.TODO(), oauth2.HTTPClient, httpClient)
 		httpClient = config.Client(ctx)
+	} else if header, ok := data.GetOk("header_authorization"); ok {
+		httpClient.Transport = &authHeaderTransport{
+			origin: httpClient.Transport,
+			header: header.(string),
+		}
 	}
 
 	client, err := newHydraClient(adminURL, httpClient)
@@ -90,4 +101,14 @@ func newHydraClient(hydraAdminURL string, httpClient *http.Client) (admin.Client
 
 	client := hydra.New(transport, nil)
 	return client.Admin, nil
+}
+
+type authHeaderTransport struct {
+	origin http.RoundTripper
+	header string
+}
+
+func (a *authHeaderTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	req.Header.Set("Authorization", a.header)
+	return a.origin.RoundTrip(req)
 }

@@ -29,3 +29,21 @@ the following arguments can be set to obtain a bearer token beforehand.
 * `oauth2_token_url` - (Optional) Token URL to use for OAuth2.0 flow. Can also be sourced from the `ORY_HYDRA_OAUTH2_TOKEN_URL` environment variable.
 * `oauth2_client_id` - (Optional) Client ID used for OAuth2.0 flow. Can also be sourced from the `ORY_HYDRA_OAUTH2_CLIENT_ID` environment variable.
 * `oauth2_client_secret` - (Optional) Client secret used for OAuth2.0 flow. Can also be sourced from the `ORY_HYDRA_OAUTH2_CLIENT_SECRET` environment variable.
+
+Alternatively, if the Hydra administrative API is protected with custom auth, the following argument can be used
+to specify `Authorization` header for all requests.
+
+* `header_authorization` - (Optional) The value for `Authorization` header to add for all requests. Can also be sources from the `HEADER_AUTHORIZATION` environment variable.
+
+Example:
+
+```hcl
+data "google_service_account_id_token" "oidc" {
+  target_audience = "https://your.hydra.admin.app/"
+}
+
+provider "oryhydra" {
+  url = "https://your.hydra.admin.app"
+  header_authorization = "Bearer ${data.google_service_account_id_token.oidc.id_token}"
+}
+```
