@@ -8,5 +8,6 @@ require (
 	github.com/hashicorp/go-getter v1.5.11 // indirect
 	github.com/hashicorp/terraform-plugin-sdk v1.13.0
 	github.com/ory/hydra-client-go v1.4.10
+	go.mongodb.org/mongo-driver v1.5.1 // indirect
 	golang.org/x/oauth2 v0.0.0-20190604053449-0f29369cfe45
 )
