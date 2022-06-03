@@ -1,3 +1,12 @@
+.PHONY: all
+all: deps build
+
+.PHONY: deps
+deps:
+	@go mod download
+	@go mod vendor
+	@go mod tidy
+
 .PHONY: build
 build:
 	@go build -o ./bin/terraform-provider-oryhydra
