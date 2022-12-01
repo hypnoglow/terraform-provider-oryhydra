@@ -28,7 +28,7 @@ jobs:
           go mod vendor
 
       - name: Run linters
-        uses: golangci/golangci-lint-action@537aa1903e5d359d0b27dbc19ddd22c5087f3fbc # v3.2.0
+        uses: golangci/golangci-lint-action@0ad9a0988b3973e851ab0a07adf248ec2e100376 # v3.3.1
         with:
           version: v1.31
           args: --verbose
