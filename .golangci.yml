@@ -1,19 +1,19 @@
+# Reference: https://golangci-lint.run/usage/configuration/
+
 run:
-  concurrency: 4
   timeout: 5m
 
 linters:
   disable-all: true
   enable:
     - deadcode
-    - depguard
+    # - depguard
     - errcheck
     - gci
     - goconst
     - gocritic
     - gocyclo
     - gofmt
-    - goimports
     - golint
     - gosec
     - gosimple
@@ -35,14 +35,17 @@ linters:
     - varcheck
 
 linters-settings:
-  goimports:
-    local-prefixes: github.com/hypnoglow/terraform-provider-oryhydra
+  gci:
+    sections:
+      - standard
+      - default
+      - prefix(github.com/hypnoglow/terraform-provider-oryhydra)
+  gocritic:
+    disabled-checks:
+      - singleCaseSwitch
 
 issues:
   exclude-rules:
     - linters:
         - errcheck
       text: Error return value of `d.Set` is not checked
-    - linters:
-        - gocritic
-      text: ^singleCaseSwitch
