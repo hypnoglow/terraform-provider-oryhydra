@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 - Added the possibility to authenticate against Hydra Admin API using custom `Authorization` header.
 
+### Changed
+
+- The provider is now built with Go 1.20.
+
 ## [0.4.0] - 2022-05-13
 
 ### Added
