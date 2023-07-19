@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.5.0] - 2023-07-20
+
 ### Added
 
 - Added the possibility to authenticate against Hydra Admin API using custom `Authorization` header.
+
+- Added back/front-channel logout arguments. Thanks to @agouil.
 
 ### Changed
 
