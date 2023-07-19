@@ -144,6 +144,22 @@ func resourceOAuth2Client() *schema.Resource {
 					"none", "client_secret_basic", "client_secret_post", "private_key_jwt",
 				}, false),
 			},
+			"backchannel_logout_session_required": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"backchannel_logout_uri": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"frontchannel_logout_session_required": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"frontchannel_logout_uri": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -294,26 +310,36 @@ func expandClient(d *schema.ResourceData) *models.OAuth2Client {
 	subjectType := d.Get("subject_type").(string)
 	tokenEndpointAuthMethod := d.Get("token_endpoint_auth_method").(string)
 
+	backchannelLogoutSessionRequired := d.Get("backchannel_logout_session_required").(bool)
+	backchannelLogoutURI := d.Get("backchannel_logout_uri").(string)
+
+	frontchannelLogoutSessionRequired := d.Get("frontchannel_logout_session_required").(bool)
+	frontchannelLogoutURI := d.Get("frontchannel_logout_uri").(string)
+
 	return &models.OAuth2Client{
-		ClientID:                clientID,
-		ClientName:              clientName,
-		ClientSecret:            clientSecret,
-		Metadata:                clientMetadata,
-		Scope:                   scope,
-		GrantTypes:              grantTypes,
-		ResponseTypes:           responseTypes,
-		Audience:                audience,
-		PostLogoutRedirectUris:  postLogoutRedirectUris,
-		RedirectUris:            redirectUris,
-		Owner:                   owner,
-		PolicyURI:               policyURI,
-		AllowedCorsOrigins:      allowedCorsOrigins,
-		TosURI:                  tosURI,
-		ClientURI:               clientURI,
-		LogoURI:                 logoURI,
-		Contacts:                contacts,
-		SubjectType:             subjectType,
-		TokenEndpointAuthMethod: tokenEndpointAuthMethod,
+		ClientID:                          clientID,
+		ClientName:                        clientName,
+		ClientSecret:                      clientSecret,
+		Metadata:                          clientMetadata,
+		Scope:                             scope,
+		GrantTypes:                        grantTypes,
+		ResponseTypes:                     responseTypes,
+		Audience:                          audience,
+		PostLogoutRedirectUris:            postLogoutRedirectUris,
+		RedirectUris:                      redirectUris,
+		Owner:                             owner,
+		PolicyURI:                         policyURI,
+		AllowedCorsOrigins:                allowedCorsOrigins,
+		TosURI:                            tosURI,
+		ClientURI:                         clientURI,
+		LogoURI:                           logoURI,
+		Contacts:                          contacts,
+		SubjectType:                       subjectType,
+		TokenEndpointAuthMethod:           tokenEndpointAuthMethod,
+		BackchannelLogoutSessionRequired:  backchannelLogoutSessionRequired,
+		BackchannelLogoutURI:              backchannelLogoutURI,
+		FrontchannelLogoutSessionRequired: frontchannelLogoutSessionRequired,
+		FrontchannelLogoutURI:             frontchannelLogoutURI,
 	}
 }
 
@@ -341,4 +367,8 @@ func flattenClient(d *schema.ResourceData, client *models.OAuth2Client) {
 	d.Set("contacts", client.Contacts)
 	d.Set("subject_type", client.SubjectType)
 	d.Set("token_endpoint_auth_method", client.TokenEndpointAuthMethod)
+	d.Set("backchannel_logout_session_required", client.BackchannelLogoutSessionRequired)
+	d.Set("backchannel_logout_uri", client.BackchannelLogoutURI)
+	d.Set("frontchannel_logout_session_required", client.FrontchannelLogoutSessionRequired)
+	d.Set("frontchannel_logout_uri", client.FrontchannelLogoutURI)
 }
