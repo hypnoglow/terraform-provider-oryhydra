@@ -83,5 +83,5 @@ Releases managed by [GoReleaser](https://goreleaser.com/).
 Run goreleaser locally:
 
 ```shell script
-goreleaser release --config .github/goreleaser.yaml --rm-dist --skip-publish --skip-validate
+goreleaser release --config .github/goreleaser.yaml --clean --skip=publish --skip=validate
 ```
