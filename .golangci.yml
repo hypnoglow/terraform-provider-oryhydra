@@ -6,7 +6,6 @@ run:
 linters:
   disable-all: true
   enable:
-    - deadcode
     # - depguard
     - errcheck
     - gci
@@ -14,25 +13,19 @@ linters:
     - gocritic
     - gocyclo
     - gofmt
-    - golint
     - gosec
     - gosimple
     - govet
     - ineffassign
-    - interfacer
-    - maligned
     - misspell
     - nakedret
     # - prealloc
-    - scopelint
     - staticcheck
-    - structcheck
     - stylecheck
     - typecheck
     - unconvert
     - unparam
     - unused
-    - varcheck
 
 linters-settings:
   gci:
