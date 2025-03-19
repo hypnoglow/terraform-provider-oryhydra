@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.6.0] - 2025-03-19
+
+### Changed
+
+- The provider is now built with Go 1.24.
+- Updated dependencies to improve security.
+
 ## [0.5.0] - 2023-07-20
 
 ### Added

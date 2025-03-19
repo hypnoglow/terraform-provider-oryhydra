@@ -1,6 +1,6 @@
 # ORY Hydra Terraform Provider
 
-![Maintenance](https://img.shields.io/maintenance/yes/2024)
+![Maintenance](https://img.shields.io/maintenance/yes/2025)
 [![main](https://github.com/hypnoglow/terraform-provider-oryhydra/actions/workflows/main.yml/badge.svg)](https://github.com/hypnoglow/terraform-provider-oryhydra/actions/workflows/main.yml)
 [![release](https://github.com/hypnoglow/terraform-provider-oryhydra/actions/workflows/release.yml/badge.svg)](https://github.com/hypnoglow/terraform-provider-oryhydra/actions/workflows/release.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/hypnoglow/terraform-provider-oryhydra)](https://goreportcard.com/report/github.com/hypnoglow/terraform-provider-oryhydra)
@@ -20,7 +20,7 @@ terraform {
   required_providers {
     oryhydra = {
       source = "hypnoglow/oryhydra"
-      version = "0.4.0"
+      version = "0.6.0"
     }
   }
 }
