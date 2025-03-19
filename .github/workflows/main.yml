@@ -40,7 +40,10 @@ jobs:
     name: Auto-merge Dependabot PRs
     needs:
       - build
-    if: github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'hypnoglow/terraform-provider-oryhydra'
+    if: >-
+      github.event_name == 'pull_request'
+      && github.event.pull_request.user.login == 'dependabot[bot]'
+      && github.repository == 'hypnoglow/terraform-provider-oryhydra'
     runs-on: ubuntu-latest
     permissions:
       contents: write
