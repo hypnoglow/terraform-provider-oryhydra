@@ -1,44 +1,52 @@
 # Reference: https://golangci-lint.run/usage/configuration/
 
-run:
-  timeout: 5m
+version: "2"
 
 linters:
-  disable-all: true
+  default: none
   enable:
-    # - depguard
     - errcheck
-    - gci
     - goconst
     - gocritic
     - gocyclo
-    - gofmt
     - gosec
-    - gosimple
     - govet
     - ineffassign
     - misspell
     - nakedret
-    # - prealloc
     - staticcheck
-    - stylecheck
-    - typecheck
     - unconvert
     - unparam
     - unused
+  settings:
+    gocritic:
+      disabled-checks:
+        - singleCaseSwitch
+  exclusions:
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - errcheck
+        text: Error return value of `d.Set` is not checked
 
-linters-settings:
-  gci:
-    sections:
-      - standard
-      - default
-      - prefix(github.com/hypnoglow/terraform-provider-oryhydra)
-  gocritic:
-    disabled-checks:
-      - singleCaseSwitch
+formatters:
+  enable:
+    - gci
+    - gofmt
+  settings:
+    gci:
+      sections:
+        - standard
+        - default
+        - prefix(github.com/hypnoglow/terraform-provider-oryhydra)
 
 issues:
-  exclude-rules:
-    - linters:
-        - errcheck
-      text: Error return value of `d.Set` is not checked
+  fix: true
+
+run:
+  timeout: 5m
+  build-tags: []
