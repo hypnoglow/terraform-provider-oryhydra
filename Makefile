@@ -18,3 +18,4 @@ prepare-examples:
 .PHONY: lint
 lint:
 	@golangci-lint run
+	@golangci-lint fmt
