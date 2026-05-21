@@ -4,13 +4,10 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"net/url"
 
-	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/hashicorp/go-cleanhttp"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
-	hydra "github.com/ory/hydra-client-go/client"
-	"github.com/ory/hydra-client-go/client/admin"
+	client "github.com/ory/hydra-client-go/v25"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/clientcredentials"
 )
@@ -74,33 +71,22 @@ func configure(data *schema.ResourceData) (interface{}, error) {
 		}
 	}
 
-	client, err := newHydraClient(adminURL, httpClient)
-	return client, err
+	return newHydraClient(adminURL, httpClient)
 }
 
-// newHydraClient returns a new configured hydra client.
-func newHydraClient(hydraAdminURL string, httpClient *http.Client) (admin.ClientService, error) {
-	u, err := url.Parse(hydraAdminURL)
-	if err != nil {
-		return nil, fmt.Errorf("parse hydra url: %v", err)
+// newHydraClient returns a new configured hydra OAuth2 API client.
+func newHydraClient(hydraAdminURL string, httpClient *http.Client) (client.OAuth2API, error) {
+	if hydraAdminURL == "" {
+		return nil, fmt.Errorf("hydra admin URL must not be empty")
 	}
 
-	config := hydra.DefaultTransportConfig()
-	config.Schemes = []string{u.Scheme}
-	config.Host = u.Host
-	if u.Path != "" {
-		config.BasePath = u.Path
+	cfg := client.NewConfiguration()
+	cfg.Servers = client.ServerConfigurations{
+		{URL: hydraAdminURL},
 	}
+	cfg.HTTPClient = httpClient
 
-	transport := httptransport.NewWithClient(
-		config.Host,
-		config.BasePath,
-		config.Schemes,
-		httpClient,
-	)
-
-	client := hydra.New(transport, nil)
-	return client.Admin, nil
+	return client.NewAPIClient(cfg).OAuth2API, nil
 }
 
 type authHeaderTransport struct {
