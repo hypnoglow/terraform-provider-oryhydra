@@ -27,4 +27,7 @@ resource "oryhydra_oauth2_client" "example_3" {
 
   subject_type               = "public"
   token_endpoint_auth_method = "none"
+
+  skip_consent        = true
+  skip_logout_consent = true
 }

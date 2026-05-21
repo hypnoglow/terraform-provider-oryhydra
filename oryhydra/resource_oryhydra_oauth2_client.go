@@ -1,12 +1,13 @@
 package oryhydra
 
 import (
+	"context"
+	"net/http"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/validation"
-	"github.com/ory/hydra-client-go/client/admin"
-	"github.com/ory/hydra-client-go/models"
+	client "github.com/ory/hydra-client-go/v25"
 )
 
 func resourceOAuth2Client() *schema.Resource {
@@ -160,6 +161,14 @@ func resourceOAuth2Client() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"skip_consent": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"skip_logout_consent": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -167,22 +176,19 @@ func resourceOAuth2Client() *schema.Resource {
 func resourceOAuth2ClientCreate(d *schema.ResourceData, m interface{}) error {
 	lg.Print("resourceOAuth2ClientCreate")
 
-	cli := m.(*admin.Client)
+	cli := m.(client.OAuth2API)
 
-	resp, err := cli.CreateOAuth2Client(
-		admin.NewCreateOAuth2ClientParams().
-			WithBody(expandClient(d)),
-	)
+	resp, _, err := cli.CreateOAuth2Client(context.Background()).
+		OAuth2Client(*expandClient(d)).
+		Execute()
 	if err != nil {
 		return err
 	}
 
-	client := resp.Payload
-
-	d.SetId(client.ClientID)
+	d.SetId(resp.GetClientId())
 
 	// NOTE: client secret is only returned on create/update, not read.
-	d.Set("client_secret", client.ClientSecret)
+	d.Set("client_secret", resp.GetClientSecret())
 
 	return resourceOAuth2ClientRead(d, m)
 }
@@ -190,25 +196,19 @@ func resourceOAuth2ClientCreate(d *schema.ResourceData, m interface{}) error {
 func resourceOAuth2ClientRead(d *schema.ResourceData, m interface{}) error {
 	lg.Print("resourceOAuth2ClientRead")
 
-	cli := m.(*admin.Client)
+	cli := m.(client.OAuth2API)
 
-	resp, err := cli.GetOAuth2Client(
-		admin.NewGetOAuth2ClientParams().
-			WithID(d.Id()),
-	)
+	resp, httpResp, err := cli.GetOAuth2Client(context.Background(), d.Id()).Execute()
 	if err != nil {
 		// NOTE: when client does not exist, Hydra returns 401 even if no authentication is required.
-		switch err.(type) {
-		case *admin.GetOAuth2ClientUnauthorized:
+		if httpResp != nil && (httpResp.StatusCode == http.StatusNotFound || httpResp.StatusCode == http.StatusUnauthorized) {
 			d.SetId("")
 			return nil
 		}
 		return err
 	}
 
-	client := resp.Payload
-
-	flattenClient(d, client)
+	flattenClient(d, resp)
 
 	return nil
 }
@@ -216,21 +216,18 @@ func resourceOAuth2ClientRead(d *schema.ResourceData, m interface{}) error {
 func resourceOAuth2ClientUpdate(d *schema.ResourceData, m interface{}) error {
 	lg.Print("resourceOAuth2ClientUpdate")
 
-	client := expandClient(d)
+	cli := m.(client.OAuth2API)
+	body := expandClient(d)
 
-	cli := m.(*admin.Client)
-
-	_, err := cli.UpdateOAuth2Client(
-		admin.NewUpdateOAuth2ClientParams().
-			WithID(d.Id()).
-			WithBody(client),
-	)
+	_, _, err := cli.SetOAuth2Client(context.Background(), d.Id()).
+		OAuth2Client(*body).
+		Execute()
 	if err != nil {
 		return err
 	}
 
 	// NOTE: client secret is only returned on create/update, not read.
-	d.Set("client_secret", client.ClientSecret)
+	d.Set("client_secret", body.GetClientSecret())
 
 	return resourceOAuth2ClientRead(d, m)
 }
@@ -238,137 +235,147 @@ func resourceOAuth2ClientUpdate(d *schema.ResourceData, m interface{}) error {
 func resourceOAuth2ClientDelete(d *schema.ResourceData, m interface{}) error {
 	lg.Print("resourceOAuth2ClientDelete")
 
-	cli := m.(*admin.Client)
+	cli := m.(client.OAuth2API)
 
-	_, err := cli.DeleteOAuth2Client(
-		admin.NewDeleteOAuth2ClientParams().
-			WithID(d.Id()),
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	_, err := cli.DeleteOAuth2Client(context.Background(), d.Id()).Execute()
+	return err
 }
 
-func expandClient(d *schema.ResourceData) *models.OAuth2Client {
+func expandClient(d *schema.ResourceData) *client.OAuth2Client {
 	lg.Print("expandClient")
 
-	clientID := d.Get("client_id").(string)
-	clientSecret := d.Get("client_secret").(string)
-	clientName := d.Get("client_name").(string)
-	clientMetadata := d.Get("client_metadata")
+	c := client.NewOAuth2Client()
+
+	if v := d.Get("client_id").(string); v != "" {
+		c.SetClientId(v)
+	}
+	if v := d.Get("client_secret").(string); v != "" {
+		c.SetClientSecret(v)
+	}
+	if v := d.Get("client_name").(string); v != "" {
+		c.SetClientName(v)
+	}
+	if v := d.Get("client_metadata"); v != nil {
+		c.Metadata = v
+	}
 
 	var scopeArray []string
 	for _, sc := range d.Get("scopes").([]interface{}) {
 		scopeArray = append(scopeArray, sc.(string))
 	}
-	scope := strings.Join(scopeArray, " ")
+	c.SetScope(strings.Join(scopeArray, " "))
 
 	var grantTypes []string
 	for _, gt := range d.Get("grant_types").([]interface{}) {
 		grantTypes = append(grantTypes, gt.(string))
 	}
+	c.GrantTypes = grantTypes
 
 	var responseTypes []string
 	for _, rt := range d.Get("response_types").([]interface{}) {
 		responseTypes = append(responseTypes, rt.(string))
 	}
+	c.ResponseTypes = responseTypes
 
 	var audience []string
 	for _, aud := range d.Get("audience").([]interface{}) {
 		audience = append(audience, aud.(string))
 	}
+	c.Audience = audience
 
 	var postLogoutRedirectUris []string
 	for _, ru := range d.Get("post_logout_redirect_uris").([]interface{}) {
 		postLogoutRedirectUris = append(postLogoutRedirectUris, ru.(string))
 	}
+	c.PostLogoutRedirectUris = postLogoutRedirectUris
 
 	var redirectUris []string
 	for _, ru := range d.Get("redirect_uris").([]interface{}) {
 		redirectUris = append(redirectUris, ru.(string))
 	}
+	c.RedirectUris = redirectUris
 
-	owner := d.Get("owner").(string)
-	policyURI := d.Get("policy_uri").(string)
+	if v := d.Get("owner").(string); v != "" {
+		c.SetOwner(v)
+	}
+	if v := d.Get("policy_uri").(string); v != "" {
+		c.SetPolicyUri(v)
+	}
 
 	var allowedCorsOrigins []string
 	for _, aco := range d.Get("allowed_cors_origins").([]interface{}) {
 		allowedCorsOrigins = append(allowedCorsOrigins, aco.(string))
 	}
+	c.AllowedCorsOrigins = allowedCorsOrigins
 
-	tosURI := d.Get("tos_uri").(string)
-	clientURI := d.Get("client_uri").(string)
-	logoURI := d.Get("logo_uri").(string)
+	if v := d.Get("tos_uri").(string); v != "" {
+		c.SetTosUri(v)
+	}
+	if v := d.Get("client_uri").(string); v != "" {
+		c.SetClientUri(v)
+	}
+	if v := d.Get("logo_uri").(string); v != "" {
+		c.SetLogoUri(v)
+	}
 
 	var contacts []string
-	for _, c := range d.Get("contacts").([]interface{}) {
-		contacts = append(contacts, c.(string))
+	for _, ct := range d.Get("contacts").([]interface{}) {
+		contacts = append(contacts, ct.(string))
+	}
+	c.Contacts = contacts
+
+	if v := d.Get("subject_type").(string); v != "" {
+		c.SetSubjectType(v)
+	}
+	if v := d.Get("token_endpoint_auth_method").(string); v != "" {
+		c.SetTokenEndpointAuthMethod(v)
 	}
 
-	subjectType := d.Get("subject_type").(string)
-	tokenEndpointAuthMethod := d.Get("token_endpoint_auth_method").(string)
-
-	backchannelLogoutSessionRequired := d.Get("backchannel_logout_session_required").(bool)
-	backchannelLogoutURI := d.Get("backchannel_logout_uri").(string)
-
-	frontchannelLogoutSessionRequired := d.Get("frontchannel_logout_session_required").(bool)
-	frontchannelLogoutURI := d.Get("frontchannel_logout_uri").(string)
-
-	return &models.OAuth2Client{
-		ClientID:                          clientID,
-		ClientName:                        clientName,
-		ClientSecret:                      clientSecret,
-		Metadata:                          clientMetadata,
-		Scope:                             scope,
-		GrantTypes:                        grantTypes,
-		ResponseTypes:                     responseTypes,
-		Audience:                          audience,
-		PostLogoutRedirectUris:            postLogoutRedirectUris,
-		RedirectUris:                      redirectUris,
-		Owner:                             owner,
-		PolicyURI:                         policyURI,
-		AllowedCorsOrigins:                allowedCorsOrigins,
-		TosURI:                            tosURI,
-		ClientURI:                         clientURI,
-		LogoURI:                           logoURI,
-		Contacts:                          contacts,
-		SubjectType:                       subjectType,
-		TokenEndpointAuthMethod:           tokenEndpointAuthMethod,
-		BackchannelLogoutSessionRequired:  backchannelLogoutSessionRequired,
-		BackchannelLogoutURI:              backchannelLogoutURI,
-		FrontchannelLogoutSessionRequired: frontchannelLogoutSessionRequired,
-		FrontchannelLogoutURI:             frontchannelLogoutURI,
+	c.SetBackchannelLogoutSessionRequired(d.Get("backchannel_logout_session_required").(bool))
+	if v := d.Get("backchannel_logout_uri").(string); v != "" {
+		c.SetBackchannelLogoutUri(v)
 	}
+	c.SetFrontchannelLogoutSessionRequired(d.Get("frontchannel_logout_session_required").(bool))
+	if v := d.Get("frontchannel_logout_uri").(string); v != "" {
+		c.SetFrontchannelLogoutUri(v)
+	}
+
+	c.SetSkipConsent(d.Get("skip_consent").(bool))
+	c.SetSkipLogoutConsent(d.Get("skip_logout_consent").(bool))
+
+	return c
 }
 
-func flattenClient(d *schema.ResourceData, client *models.OAuth2Client) {
+func flattenClient(d *schema.ResourceData, c *client.OAuth2Client) {
 	lg.Print("flattenClient")
 
-	d.Set("client_id", client.ClientID)
-	d.Set("client_name", client.ClientName)
-	d.Set("client_metadata", client.Metadata)
+	d.Set("client_id", c.GetClientId())
+	d.Set("client_name", c.GetClientName())
+	d.Set("client_metadata", c.Metadata)
 
 	// NOTE: client secret is never returned from read operations, so don't set this field.
 
-	d.Set("scopes", strings.Split(client.Scope, " "))
-	d.Set("grant_types", client.GrantTypes)
-	d.Set("response_types", client.ResponseTypes)
-	d.Set("audience", client.Audience)
-	d.Set("post_logout_redirect_uris", client.PostLogoutRedirectUris)
-	d.Set("redirect_uris", client.RedirectUris)
-	d.Set("owner", client.Owner)
-	d.Set("policy_uri", client.PolicyURI)
-	d.Set("allowed_cors_origins", client.AllowedCorsOrigins)
-	d.Set("tos_uri", client.TosURI)
-	d.Set("client_uri", client.ClientURI)
-	d.Set("logo_uri", client.LogoURI)
-	d.Set("contacts", client.Contacts)
-	d.Set("subject_type", client.SubjectType)
-	d.Set("token_endpoint_auth_method", client.TokenEndpointAuthMethod)
-	d.Set("backchannel_logout_session_required", client.BackchannelLogoutSessionRequired)
-	d.Set("backchannel_logout_uri", client.BackchannelLogoutURI)
-	d.Set("frontchannel_logout_session_required", client.FrontchannelLogoutSessionRequired)
-	d.Set("frontchannel_logout_uri", client.FrontchannelLogoutURI)
+	if scope := c.GetScope(); scope != "" {
+		d.Set("scopes", strings.Split(scope, " "))
+	}
+	d.Set("grant_types", c.GrantTypes)
+	d.Set("response_types", c.ResponseTypes)
+	d.Set("audience", c.Audience)
+	d.Set("post_logout_redirect_uris", c.PostLogoutRedirectUris)
+	d.Set("redirect_uris", c.RedirectUris)
+	d.Set("owner", c.GetOwner())
+	d.Set("policy_uri", c.GetPolicyUri())
+	d.Set("allowed_cors_origins", c.AllowedCorsOrigins)
+	d.Set("tos_uri", c.GetTosUri())
+	d.Set("client_uri", c.GetClientUri())
+	d.Set("logo_uri", c.GetLogoUri())
+	d.Set("contacts", c.Contacts)
+	d.Set("subject_type", c.GetSubjectType())
+	d.Set("token_endpoint_auth_method", c.GetTokenEndpointAuthMethod())
+	d.Set("backchannel_logout_session_required", c.GetBackchannelLogoutSessionRequired())
+	d.Set("backchannel_logout_uri", c.GetBackchannelLogoutUri())
+	d.Set("frontchannel_logout_session_required", c.GetFrontchannelLogoutSessionRequired())
+	d.Set("frontchannel_logout_uri", c.GetFrontchannelLogoutUri())
+	d.Set("skip_consent", c.GetSkipConsent())
+	d.Set("skip_logout_consent", c.GetSkipLogoutConsent())
 }
