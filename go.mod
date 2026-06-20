@@ -1,13 +1,13 @@
 module github.com/hypnoglow/terraform-provider-oryhydra
 
-go 1.24.1
+go 1.25.0
 
 require (
 	github.com/go-openapi/runtime v0.29.0
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/terraform-plugin-sdk v1.17.2
 	github.com/ory/hydra-client-go v1.4.10
-	golang.org/x/oauth2 v0.32.0
+	golang.org/x/oauth2 v0.36.0
 )
 
 require (
