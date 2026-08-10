@@ -37,7 +37,7 @@ For more detailed documentation about each argument, refer to the [Hydra officia
 
 * `scopes` - (Optional) A list of scopes for the Client. Scope is a value as described in Section 3.3 of OAuth 2.0 [RFC6749](https://tools.ietf.org/html/rfc6749) that the Client can use when requesting access tokens.
 
-* `grant_types` - (Optional) A list of grant types the Client is allowed to use. Valid values include `refresh_token`, `authorization_code`, `client_credentials` and `implicit`.
+* `grant_types` - (Optional) A list of grant types the Client is allowed to use. Valid values include `refresh_token`, `authorization_code`, `client_credentials`, `implicit` and `urn:ietf:params:oauth:grant-type:jwt-bearer`.
 
 * `response_types` - (Optional) A list of the OAuth 2.0 response type strings that the Client can use at the authorization endpoint. Valid values include `token`, `code`, `id_token`.
 
