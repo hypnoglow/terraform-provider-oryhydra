@@ -60,6 +60,7 @@ func resourceOAuth2Client() *schema.Resource {
 					Type: schema.TypeString,
 					ValidateFunc: validation.StringInSlice([]string{
 						"refresh_token", "authorization_code", "client_credentials", "implicit",
+						"urn:ietf:params:oauth:grant-type:jwt-bearer",
 					}, false),
 				},
 			},

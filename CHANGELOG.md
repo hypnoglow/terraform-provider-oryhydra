@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+### Added
+
+- `grant_types` now accepts `urn:ietf:params:oauth:grant-type:jwt-bearer`, the
+  grant type used by Hydra's JWT profile for OAuth 2.0 (RFC 7523).
+
 ## [0.6.0] - 2025-03-19
 
 ### Changed
